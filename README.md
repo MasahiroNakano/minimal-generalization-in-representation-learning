@@ -1,5 +1,11 @@
 This repository contains data and code that accompany the paper titled "Minimal cross-trial generalization in learning the representation of an odor-guided choice task".
 
+## Setup for Conda users
+conda create --name stan2 python=3.7
+conda activate stan2
+pip insatll -r requirements.txt
+python -m ipykernel install --user --name stan2
+
 ## Table of Contents
 
 * `data/takahashi2016roesch2009burton2018Valid.csv`: behavioral data aggregated from three studies: Roesch et al. (2009), Takahashi et al. (2016), and Burton et al. (2018). Only valid trials (i.e., trials in which animals made a choice response, and received the reward delivery if reward was available) are included. See [Data](#data) for details.

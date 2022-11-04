@@ -1,0 +1,5 @@
+ipykernel
+pystan <= 2.19 #Python should be <3.7??
+matplotlib
+scipy
+seaborn
