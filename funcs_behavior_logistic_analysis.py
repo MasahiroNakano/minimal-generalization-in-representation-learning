@@ -31,19 +31,19 @@ def prep_data(dataValid, fitName, N_exclude=0):
 
     startSubject = [int(ratList[i+1]!=ratList[i]) for i in range(len(ratList)-1)]
     startSubject = [1] + startSubject
-    
+
     return ratList, startSubject, NCorrectForcedBetweenList, accuracyList
 
 
 # plot individual 95% HDI and posterior of group mean
-def plot_hdi(fitName, stanCodeName, iRegressor, sort=True, title=None, ylim=0.2, reorder=False):  # iRegressor: 0=intercept, 1..n=slopes
+def plot_hdi(fitName, stanCodeName, iRegressor, sort=True, title=None, ylim=0.2, reorder=False, parent_dir=''):  # iRegressor: 0=intercept, 1..n=slopes
     fig = plt.figure(figsize=(12,4))
     gs = fig.add_gridspec(1, 6)
     axi = fig.add_subplot(gs[:-1])
     axg = fig.add_subplot(gs[-1])
     gs.update(wspace=0, hspace=0)
 
-    allSamples = pd.read_csv('model_fits/' + fitName + '_' + stanCodeName + '_allSamples.csv')
+    allSamples = pd.read_csv(parent_dir + 'model_fits/' + fitName + '_' + stanCodeName + '_allSamples.csv')
     coeff = allSamples.loc[allSamples['warmup']==0, [col for col in allSamples if col.startswith('beta['+str(iRegressor+1))]].values
     if sort:
         coeff = coeff[:, np.argsort(np.mean(coeff, axis=0))] # sort

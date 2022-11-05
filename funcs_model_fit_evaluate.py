@@ -35,10 +35,9 @@ def data2dict(data):
     sessionType = sessionType.astype(int)
     return dict(Ns=Ns, Nt=Nt, NSession=NSession, NSessionTotal=NSessionTotal, odor=odor, choice=choice, reward=reward, delay=delay, trialType=trialType, sessionType=sessionType, startSubject=startSubject, startSession=startSession, block_index=block_index)
 
-
-def fitModel(modelName, datasetName, dd=None, samplingInfo=None, moreControl=None):
+def fitModel(modelName, datasetName, dd=None, samplingInfo=None, moreControl=None, parent_dir='', postfix=''):
     # compile the model using stan_utility: it compiles the first time, saves the cached model and reuses it if there's no change
-    stanFile = 'model_code_stan/' + modelName + '.stan'
+    stanFile = parent_dir + 'model_code_stan/' + modelName + '.stan'
     model = compile_model(stanFile)
     # fit model
     if moreControl is None:
@@ -47,7 +46,7 @@ def fitModel(modelName, datasetName, dd=None, samplingInfo=None, moreControl=Non
         fit = model.sampling(data=dd, iter=samplingInfo['samples'], warmup=samplingInfo['warmup'], n_jobs=samplingInfo['n_jobs'], chains=samplingInfo['chains'], seed=0, init='random', control=dict(max_treedepth=moreControl['max_treedepth'], adapt_delta=moreControl['adapt_delta']))
     # save the fit to csv
     allSamples = fit.to_dataframe(permuted=False, inc_warmup=True)
-    allSamples.to_csv('model_fits/'+datasetName+'_'+modelName+'_allSamples.csv')
+    allSamples.to_csv(parent_dir + 'model_fits/'+datasetName+'_'+modelName+'_allSamples' + postfix + '.csv')
     return fit
 
 
@@ -96,13 +95,13 @@ def tracePlot(modelInfo, samplingInfo, allSamples, inc_warmup=False):
             axes[1,iPar].set_ylabel('sigma[' + str(iPar+1) +']')
             # individual parameters before transformation
             for iSub in np.arange(Ns):
-                axes[2+iSub,iPar].plot(sampleIdx,dataThis[modelInfo['parNames'][iPar] + '_samp[' + str(iSub+1) +']'])    
+                axes[2+iSub,iPar].plot(sampleIdx,dataThis[modelInfo['parNames'][iPar] + '_samp[' + str(iSub+1) +']'])
                 axes[2+iSub,iPar].set_ylabel(modelInfo['parNames'][iPar] + '_samp[' + str(iSub+1) +']')
                 if iSub == Ns-1:
                     axes[iSub+2,iPar].set_xlabel('Sample index')
             # individual parameters after transformation
             for iSub in np.arange(Ns):
-                axes[2+Ns+iSub,iPar].plot(sampleIdx,dataThis[modelInfo['parNames'][iPar] + '[' + str(iSub+1) +']'])    
+                axes[2+Ns+iSub,iPar].plot(sampleIdx,dataThis[modelInfo['parNames'][iPar] + '[' + str(iSub+1) +']'])
                 axes[2+Ns+iSub,iPar].set_ylabel(modelInfo['parNames'][iPar] + '[' + str(iSub+1) +']')
                 if iSub == Ns-1:
                     axes[iSub+2,iPar].set_xlabel('Sample index')
@@ -126,7 +125,7 @@ def parameterSamplesbySubject(modelInfo, samplingInfo, posterior):
         axes[iPar].set(ylabel=modelInfo['parNames'][iPar],xticks=[])
     sns.despine()
 
-    
+
 def parameterSamplesHistogram(modelInfo, samplingInfo, posterior):
     Ns = posterior[modelInfo['parNames'][0]].shape[1]
     # check the group mean and std
@@ -152,8 +151,8 @@ def parameterSamplesHistogram(modelInfo, samplingInfo, posterior):
         axes[iPar].set_ylabel(modelInfo['parNames'][iPar])
         for iSub in np.arange(Ns):
             sns.distplot(posterior[modelInfo['parNames'][iPar]][:,iSub], ax=axes[iPar])
-    
-    
+
+
 def scatterPlotParameters(modelInfo, posterior):
     Ns = posterior[modelInfo['parNames'][0]].shape[1]
     # before transformation
@@ -181,14 +180,14 @@ def scatterPlotParameters(modelInfo, posterior):
                 ax.scatter(posterior[modelInfo['parNames'][iPar1]][:,iSub],posterior[modelInfo['parNames'][iPar2]][:,iSub], c=colors[iSub%len(colors)], alpha=0.5)
             ax.set(xlabel=modelInfo['parNames'][iPar1], ylabel=modelInfo['parNames'][iPar2])
     sns.despine()
-    
-            
+
+
 def transformationPlots(modelInfo, samplingInfo, posterior):
     import scipy as sp
-    
+
     def test_phi_approx(x): # Phi_approx(x) = logit^{-1}(0.07056 x^3 + 1.5976 x)
         return sp.special.expit(0.07056*(x**3) + 1.5976*x)
-    
+
     def test_transformation(x, bounds):
         lb = bounds[0]
         ub = bounds[1]
@@ -196,7 +195,7 @@ def transformationPlots(modelInfo, samplingInfo, posterior):
             return x
         else:
             return test_phi_approx(x)*(ub-lb) + lb
-        
+
     Ns = posterior[modelInfo['parNames'][0]].shape[1]
 
     ## plot the average parameter (for each subject) before and after transformation: i.e. post vs mu_pr + sigma * pre_samp
@@ -255,7 +254,7 @@ def func_WAIC_comparison(likelihood1, likelihood2, typeCorrection=2):
     # likelihood1/2: #samples * #trials
     # take model 1 as baseline
     Ntrials = likelihood1.shape[1]
-    
+
     lppd1_trial = np.log(np.mean(likelihood1, axis=0))
     lppd2_trial = np.log(np.mean(likelihood2, axis=0))
     if typeCorrection == 1:
@@ -264,14 +263,14 @@ def func_WAIC_comparison(likelihood1, likelihood2, typeCorrection=2):
     else:
         pWAIC1_trial = np.var(np.log(likelihood1), axis=0, ddof=1)
         pWAIC2_trial = np.var(np.log(likelihood2), axis=0, ddof=1)
-    
+
     waic1_trial = - 2 * lppd1_trial + 2 * pWAIC1_trial
     waic2_trial = - 2 * lppd2_trial + 2 * pWAIC2_trial
-    
+
     waic_diff = np.sum(waic2_trial - waic1_trial)
     waic_diff_se = np.sqrt(Ntrials * np.var(waic2_trial - waic1_trial))
-    
-    return waic_diff, waic_diff_se, waic_diff/Ntrials, waic_diff_se/Ntrials, 
+
+    return waic_diff, waic_diff_se, waic_diff/Ntrials, waic_diff_se/Ntrials,
 
 
 def calculate_likelihood(datasetName, data, baselineModel, modelList):
