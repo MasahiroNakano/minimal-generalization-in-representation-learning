@@ -13,7 +13,7 @@ def prep_data(dataValid, fitName, N_exclude=0):
     ratList, sessionList, iTrialList, NCorrectForcedBetweenList, accuracyList = [[] for _ in range(5)]
     for rat in dataValid['rat'].unique():
         for session in dataValid.loc[dataValid['rat']==rat,'session'].unique():
-            for iBlock in np.arange(NBlocks):
+            for iBlock in np.arange(n_blocks):
                 dataBlock = dataValid[(dataValid['rat']==rat)&(dataValid['session']==session)&(dataValid['block']==iBlock+1)].copy()[N_exclude:].reset_index(drop=True)
                 lastWrong = -1
                 for iTrial in np.arange(dataBlock.shape[0]):
@@ -31,7 +31,7 @@ def prep_data(dataValid, fitName, N_exclude=0):
 
     startSubject = [int(ratList[i+1]!=ratList[i]) for i in range(len(ratList)-1)]
     startSubject = [1] + startSubject
-    
+
     return ratList, startSubject, NCorrectForcedBetweenList, accuracyList
 
 
