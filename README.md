@@ -1,10 +1,27 @@
 This repository contains data and code that accompany the paper titled "Minimal cross-trial generalization in learning the representation of an odor-guided choice task".
 
-## Setup for Conda users
-conda create --name stan2 python=3.7
-conda activate stan2
+## Setup
+### for Conda users
+```
+conda create --name Songs2022 python=3.7
+conda activate Songs2022
 pip insatll -r requirements.txt
-python -m ipykernel install --user --name stan2
+```
+
+If you are using Jupyter notebook, run the below command to install the kernel.
+`python -m ipykernel install --user --name Songs2022`
+
+### for Docker users
+```cd TO THIS DIRECTORY
+docker build -t Songs2022 .
+docker run -v /YOUR_PATH/minimal-generalization-in-representation-learning:/root --rm -it Songs2022 /bin/bash
+```
+(replace YOUR_PATH with actual path)
+
+## Running hierarchical logistic regression to simulated data
+1. set the parent dir in `simulate_hierarchical_regression.py`
+2. `python simulate_hierarchical_regression.py`
+results will be saved as 'fourState_full_simulation_hierarchical_regression.png' in the working dir
 
 ## Table of Contents
 

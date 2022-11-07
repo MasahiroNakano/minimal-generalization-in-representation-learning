@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 
-parent_dir = '/Users/nakanomasahiro/PycharmProjects/research/random/Songs2022/workspace/'
+parent_dir = '/root/'
 import sys
 sys.path.append(parent_dir)
 from utils_models import *
@@ -20,7 +20,7 @@ datasetName = 'takahashi2016roesch2009burton2018Valid'
 modelName = 'fourState_full'
 
 ## 1. simulate data
-NSessions = 100
+NSessions = 100000
 NTrials = 57
 
 params = get_params(datasetName, modelName, parent_dir)
